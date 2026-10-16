@@ -82,3 +82,54 @@ jobs:
           file: apps/self-hosted/${{ matrix.service }}/${{ matrix.service == 'storage' && 'dockerfile' || 'Dockerfile' }}
           push: false
           tags: locketdio-${{ matrix.service }}:ci
+
+  # Boots the backend images and fails if any required module is missing
+  # (e.g. a source file absent from the build context). Other boot errors
+  # (missing credentials/env) are ignored — only MODULE_NOT_FOUND fails.
+  smoke-backend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build api image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/self-hosted/api
+          file: apps/self-hosted/api/Dockerfile
+          push: false
+          load: true
+          tags: locketdio-api:ci
+
+      - name: Build storage image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/self-hosted/storage
+          file: apps/self-hosted/storage/dockerfile
+          push: false
+          load: true
+          tags: locketdio-storage:ci
+
+      - name: Boot containers and check for missing modules
+        run: |
+          docker run --rm locketdio-api:ci test -f src/utils/logEventUtils.js
+          docker run -d --name smoke-api locketdio-api:ci
+          docker run -d --name smoke-storage locketdio-storage:ci
+          sleep 15
+          echo "===== api logs ====="
+          docker logs smoke-api 2>&1 | tail -n 20
+          echo "===== storage logs ====="
+          docker logs smoke-storage 2>&1 | tail -n 20
+          docker logs smoke-api > /tmp/api.log 2>&1
+          docker logs smoke-storage > /tmp/storage.log 2>&1
+          docker rm -f smoke-api smoke-storage
+          if grep -q 'MODULE_NOT_FOUND' /tmp/api.log /tmp/storage.log; then
+            echo "SMOKE FAIL: MODULE_NOT_FOUND in backend image"
+            exit 1
+          fi
+          echo "SMOKE OK: no missing modules"
