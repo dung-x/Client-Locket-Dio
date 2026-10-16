@@ -18,7 +18,8 @@ COPY . .
 # Build ở chế độ production
 # Lưu ý: các biến VITE_* sẽ được đọc từ .env.production nếu file này tồn tại trong context
 ENV NODE_ENV=production
-RUN if [ ! -x node_modules/.bin/vite ]; then echo "vite missing, reinstalling dev deps..."; npm ci --include=dev --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000; fi
+# Doctor + self-heal: in ra chẩn đoán để debug, cài lại nếu thiếu vite.
+RUN echo "=== doctor ===" && node --version && npm --version && echo "omit config: $(npm config get omit)" && echo "bin count: $(ls node_modules/.bin 2>/dev/null | wc -l)" && ls -la node_modules/.bin/vite 2>&1; if [ ! -x node_modules/.bin/vite ]; then echo "VITE MISSING -> reinstalling dev deps..."; npm ci --include=dev --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000; echo "after reinstall:"; ls -la node_modules/.bin/vite; fi
 RUN test -x node_modules/.bin/vite && npm run build
 
 # ==============================
