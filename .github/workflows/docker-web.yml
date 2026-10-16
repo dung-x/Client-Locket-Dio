@@ -1,17 +1,17 @@
 name: docker-web
 
-# Builds the self-hosted web image and publishes it to GHCR,
+# Builds the self-hosted images and publishes web to GHCR,
 # so it can be pulled without a local build:
 #   docker pull ghcr.io/dung-x/client-locket-dio-web:latest
 on:
   push:
     branches: [main]
     paths:
-      - "apps/self-hosted/web/**"
+      - "apps/self-hosted/**"
       - ".github/workflows/docker-web.yml"
   pull_request:
     paths:
-      - "apps/self-hosted/web/**"
+      - "apps/self-hosted/**"
       - ".github/workflows/docker-web.yml"
   workflow_dispatch:
 
@@ -57,3 +57,28 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  # Validates the backend images still build (no push).
+  # If this is green but local api/storage crash with MODULE_NOT_FOUND,
+  # the local images are stale -> rebuild with --no-cache.
+  build-backend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        service: [api, storage]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.service }} image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/self-hosted/${{ matrix.service }}
+          file: apps/self-hosted/${{ matrix.service }}/${{ matrix.service == 'storage' && 'dockerfile' || 'Dockerfile' }}
+          push: false
+          tags: locketdio-${{ matrix.service }}:ci
