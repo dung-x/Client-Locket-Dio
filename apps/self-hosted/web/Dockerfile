@@ -18,7 +18,8 @@ COPY . .
 # Build ở chế độ production
 # Lưu ý: các biến VITE_* sẽ được đọc từ .env.production nếu file này tồn tại trong context
 ENV NODE_ENV=production
-RUN npm run build
+RUN if [ ! -x node_modules/.bin/vite ]; then echo "vite missing, reinstalling dev deps..."; npm ci --include=dev --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000; fi
+RUN test -x node_modules/.bin/vite && npm run build
 
 # ==============================
 #  Stage 2: Serve build (Vite preview)
