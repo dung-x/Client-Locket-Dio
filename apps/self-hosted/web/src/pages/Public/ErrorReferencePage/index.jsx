@@ -9,6 +9,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { getListIncidents } from "@/services";
+import { copyText } from "@/utils/clipboard";
 
 const severityMap = {
   low: {
@@ -61,7 +62,7 @@ const ErrorReferencePage = () => {
   }, [search, errors]);
 
   const copySolutions = async (item) => {
-    await navigator.clipboard.writeText(item.solutions.join("\n"));
+    await copyText(item.solutions.join("\n"));
     setCopiedId(item.id);
     setTimeout(() => setCopiedId(null), 1500);
   };

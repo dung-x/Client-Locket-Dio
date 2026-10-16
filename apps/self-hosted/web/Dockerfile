@@ -6,8 +6,11 @@ FROM node:20-slim AS builder
 WORKDIR /app
 
 # Cài đặt dependencies
+# (retry flags: registry.npmjs.org thỉnh thoảng timeout trong môi trường build)
+# NOTE: image node:* mặc định NODE_ENV=production nên npm ci sẽ bỏ qua
+# devDependencies (vite, legacy plugin...) → phải --include=dev thì build mới chạy.
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
 
 # Copy source code
 COPY . .

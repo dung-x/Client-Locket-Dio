@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/SonnerToast";
 import QrCodeNew from "./QrCodeNew";
 import ConfirmPoup from "@/components/PoupScreen/ConfirmPoup";
+import { copyText } from "@/utils/clipboard";
 
 export default function PayPage() {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -134,7 +135,7 @@ export default function PayPage() {
                   className="w-full bg-indigo-500 text-white rounded-lg p-2 hover:bg-indigo-600 transition-colors"
                   onClick={() => {
                     if (plan.checkout_url) {
-                      navigator.clipboard.writeText(plan.checkout_url);
+                      copyText(plan.checkout_url);
                       SonnerInfo("Link thanh toán đã được copy!");
                     } else {
                       SonnerInfo("Link thanh toán chưa sẵn sàng.");
@@ -204,8 +205,8 @@ export default function PayPage() {
                     </span>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(
-                          plan.bank_info?.account_number,
+                        copyText(
+                          plan.bank_info && plan.bank_info.account_number
                         );
                         setCopied("stk");
                         setTimeout(() => setCopied(false), 1500);
@@ -231,7 +232,7 @@ export default function PayPage() {
                     </span>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(plan.price.toString());
+                        copyText(plan.price.toString());
                         setCopied("price");
                         setTimeout(() => setCopied(false), 1500);
                       }}
@@ -256,7 +257,7 @@ export default function PayPage() {
                     </span>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(plan.transfer_content);
+                        copyText(plan.transfer_content);
                         setCopied("content");
                         setTimeout(() => setCopied(false), 1500);
                       }}

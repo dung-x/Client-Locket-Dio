@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Code, Copy, Check, Book, Music, Cloud, Search } from "lucide-react";
+import { copyText } from "@/utils/clipboard";
 
 // Constants - Dễ dàng thêm API mới
 const API_CATEGORIES = {
@@ -144,7 +145,7 @@ const useClipboard = () => {
   const [copiedCode, setCopiedCode] = useState("");
 
   const copyToClipboard = (text, type) => {
-    navigator.clipboard.writeText(text);
+    copyText(text);
     setCopiedCode(type);
     setTimeout(() => setCopiedCode(""), 2000);
   };

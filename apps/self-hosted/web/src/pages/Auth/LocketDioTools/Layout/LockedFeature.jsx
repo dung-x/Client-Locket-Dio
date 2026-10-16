@@ -1,6 +1,7 @@
 import { Copy } from "lucide-react";
 import { SonnerSuccess } from "@/components/ui/SonnerToast";
 import { MYBANK_CONFIG } from "@/config";
+import { copyText } from "@/utils/clipboard";
 import { useMemo } from "react";
 
 const LockedFeature = ({
@@ -35,8 +36,9 @@ const LockedFeature = ({
 
   const handleCopy = async (text) => {
     try {
-      await navigator.clipboard.writeText(text);
-      SonnerSuccess("Đã copy vào clipboard");
+      var ok = await copyText(text);
+      if (ok) SonnerSuccess("Đã copy vào clipboard");
+      else SonnerSuccess("Không thể copy, vui lòng copy thủ công");
     } catch {
       SonnerSuccess("Không thể copy, vui lòng copy thủ công");
     }

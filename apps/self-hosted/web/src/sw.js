@@ -23,8 +23,15 @@ registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html")));
 
 // Push Notification handler
 self.addEventListener("push", (event) => {
-  const data = event.data?.json() || {};
-  const notificationTitle = data.title || "🔔 Thông báo";
+  var data = {};
+  try {
+    if (event.data && typeof event.data.json === "function") {
+      data = event.data.json() || {};
+    }
+  } catch (e) {
+    data = {};
+  }
+  var notificationTitle = data.title || "🔔 Thông báo";
   const notificationOptions = {
     body: data.body || "Bạn có thông báo mới!",
     data: { url: data.url || "https://locket-dio.com" }, // truyền URL để redirect khi click
@@ -41,7 +48,11 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const urlToOpen = event.notification.data?.url || "https://locket-dio.com";
+  const urlToOpen =
+    (event.notification &&
+      event.notification.data &&
+      event.notification.data.url) ||
+    "https://locket-dio.com";
 
   event.waitUntil(
     clients

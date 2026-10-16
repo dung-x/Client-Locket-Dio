@@ -84,7 +84,16 @@ export default function SwManager() {
   const clearIndexedDB = async () => {
     if (!("indexedDB" in window)) return;
 
-    const databases = await indexedDB.databases();
+    // Safari 12.5 has no indexedDB.databases() — skip instead of throwing.
+    if (typeof indexedDB.databases !== "function") return;
+
+    var databases = [];
+    try {
+      databases = await indexedDB.databases();
+    } catch (e) {
+      return;
+    }
+    if (!databases || !databases.length) return;
 
     await Promise.all(
       databases.map((db) => {

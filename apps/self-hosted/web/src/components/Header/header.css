@@ -4,7 +4,9 @@
   font-size: 1.8rem;
   background: linear-gradient(45deg, #ff0000, #1a53ff, #ea01ff, #fcfc00);
   background-clip: text;
+  -webkit-background-clip: text;
   color: transparent;
+  -webkit-text-fill-color: transparent;
   font-weight: bold;
   background-size: 400% 400%;
   animation: gradient 3s ease infinite;

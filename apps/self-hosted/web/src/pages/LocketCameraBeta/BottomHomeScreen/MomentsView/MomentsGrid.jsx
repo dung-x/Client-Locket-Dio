@@ -45,8 +45,13 @@ const MomentsGrid = ({
   // Intersection Observer
   useEffect(() => {
     if (!lastElementRef.current) return;
+    // Safari 12.0 and some old webviews lack IntersectionObserver — fall back
+    // to the manual "Xem thêm" button (handleLoadMore) instead of crashing.
+    if (typeof IntersectionObserver === "undefined") return;
 
-    observerRef.current?.disconnect();
+    if (observerRef.current && typeof observerRef.current.disconnect === "function") {
+      observerRef.current.disconnect();
+    }
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -72,7 +77,11 @@ const MomentsGrid = ({
 
     observerRef.current.observe(lastElementRef.current);
 
-    return () => observerRef.current?.disconnect();
+    return () => {
+      if (observerRef.current && typeof observerRef.current.disconnect === "function") {
+        observerRef.current.disconnect();
+      }
+    };
   }, [visibleCount, moments.length, hasMore, loadMoreOlder, selectedFriendUid]);
 
   const handleLoaded = (id) => {

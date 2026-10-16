@@ -1,0 +1,35 @@
+name: docker-web
+
+# Validates that the self-hosted web image builds (npm ci + vite build).
+# Runs on pushes touching the web app, on PRs, and manually.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/self-hosted/web/**"
+      - ".github/workflows/docker-web.yml"
+  pull_request:
+    paths:
+      - "apps/self-hosted/web/**"
+      - ".github/workflows/docker-web.yml"
+  workflow_dispatch:
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build web image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/self-hosted/web
+          file: apps/self-hosted/web/Dockerfile
+          push: false
+          tags: locketdio-web:ci

@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import tailwindcss from "@tailwindcss/vite";
+import legacy from "@vitejs/plugin-legacy";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { VitePWA } from "vite-plugin-pwa";
@@ -76,17 +76,44 @@ const publicDir = brand ? `public-${brand}` : "public";
 export default defineConfig({
   publicDir,
   base: "/",
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   server: {
     host: true,
   },
-  plugins: [tailwindcss(), react(), VitePWA(manifestForPlugIn), visualizer()],
+  plugins: [
+    react(),
+    // Safari 12.5 legacy build — keep in sync with apps/self-hosted/web.
+    legacy({
+      targets: ["safari >= 12", "ios >= 12", "chrome >= 63", "firefox >= 67"],
+      modernTargets: [
+        "safari >= 16.4",
+        "chrome >= 107",
+        "edge >= 107",
+        "firefox >= 104",
+      ],
+      polyfills: true,
+      additionalLegacyPolyfills: [
+        "regenerator-runtime/runtime",
+        "core-js/stable",
+      ],
+      renderLegacyChunks: true,
+      modernPolyfills: true,
+    }),
+    VitePWA(manifestForPlugIn),
+    visualizer(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"), // alias @ trỏ vào thư mục src
     },
   },
   build: {
+    target: "es2017",
+    minify: "terser",
+    terserOptions: {
+      ecma: 2017,
+      safari10: true,
+    },
+    cssTarget: "safari12",
     rollupOptions: {
       output: {
         manualChunks: {

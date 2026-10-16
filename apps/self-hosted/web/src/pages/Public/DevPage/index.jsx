@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Cloud, Copy, Monitor, Thermometer } from "lucide-react";
 import { useLocationWeather } from "@/utils";
+import { copyText } from "@/utils/clipboard";
 
 const DevPage = () => {
   const [devices, setDevices] = useState([]);
@@ -78,9 +79,11 @@ const DevPage = () => {
   }, [selectedDeviceId, activeTab]);
 
   const copyToClipboard = (text, type) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopySuccess(`${type} copied!`);
-      setTimeout(() => setCopySuccess(""), 2000);
+    copyText(text).then((ok) => {
+      if (ok) {
+        setCopySuccess(`${type} copied!`);
+        setTimeout(() => setCopySuccess(""), 2000);
+      }
     });
   };
 

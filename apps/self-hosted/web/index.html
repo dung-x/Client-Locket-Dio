@@ -53,6 +53,21 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
     
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Safari 12 boot flag (ES5 only): adds .safari12 for CSS fallbacks.
+         vite-plugin-legacy injects the nomodule bundle below at build time. -->
+    <script>
+      (function () {
+        var ua = navigator.userAgent || "";
+        var isIOS12 = /OS 12_/.test(ua);
+        var isSafari12 = /Version\/12\./.test(ua);
+        if (isIOS12 || isSafari12) {
+          document.documentElement.className += " safari12";
+        }
+        if (!("fetch" in window) || !("Promise" in window)) {
+          document.documentElement.className += " legacy-no-fetch";
+        }
+      })();
+    </script>
     <link
       rel="preload"
       href="/tailwind.css"

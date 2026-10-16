@@ -1,3 +1,5 @@
+import daisyui from "daisyui";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
@@ -5,6 +7,14 @@ export default {
     extend: {},
   },
   plugins: [
-    require("daisyui"), // Thêm DaisyUI vào Tailwind
+    daisyui, // DaisyUI v4 — Safari 12 compatible (no oklch / @layer)
   ],
+  daisyui: {
+    themes: true,
+    darkTheme: "dark",
+    base: true,
+    styled: true,
+    utils: true,
+    logs: false,
+  },
 };

@@ -7,7 +7,8 @@ const themeColors = {
   dark: "white",
   retro: "#ff9800",
   cyberpunk: "#ff0077",
-  valentine: "oklch(52% .223 3.958)",
+  // Safari 12 cannot parse oklch() — use the sRGB fallback (#e91e63).
+  valentine: "#e91e63",
   aqua: "#00d4ff",
 };
 

@@ -24,14 +24,14 @@ export const getAvailableCameras = async () => {
 
       // ➕ Phân loại theo đặc điểm
       if (/cực rộng|ultra|0.5x|góc rộng|camera2 2/.test(label)) {
-        backUltraWideCamera ??= device;
+        if (backUltraWideCamera === null || backUltraWideCamera === undefined) backUltraWideCamera = device;
       } else if (/chụp xa|tele|zoom|2x|3x|5x/.test(label)) {
-        backZoomCamera ??= device;
+        if (backZoomCamera === null || backZoomCamera === undefined) backZoomCamera = device;
       } else if (
         /camera kép|camera|bình thường|1x|rộng/.test(label) &&
         !/cực rộng|chụp xa|zoom|tele/.test(label)
       ) {
-        backNormalCamera ??= device;
+        if (backNormalCamera === null || backNormalCamera === undefined) backNormalCamera = device;
       }
     }
   });

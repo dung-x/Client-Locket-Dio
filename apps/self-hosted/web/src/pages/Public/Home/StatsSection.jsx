@@ -33,6 +33,11 @@ const AnimatedNumber = ({ value, display }) => {
   const hasAnimated = useRef(false);
 
   useEffect(() => {
+    // Safari 12.0 fallback: no IntersectionObserver → show final value immediately.
+    if (typeof IntersectionObserver === "undefined") {
+      setCount(value);
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated.current) {

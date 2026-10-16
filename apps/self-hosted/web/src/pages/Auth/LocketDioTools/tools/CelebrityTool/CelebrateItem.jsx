@@ -1,21 +1,24 @@
 import React from "react";
 import { Link, Plus, UserRoundCheck } from "lucide-react";
 import { SonnerSuccess } from "@/components/ui/SonnerToast";
+import { copyText } from "@/utils/clipboard";
 
 export default function CelebrateItem({ user, slotdata, onAdd }) {
   // Tính % bạn bè (nếu có dữ liệu)
   const percent =
-    slotdata?.max_friends && slotdata?.friend_count
+    slotdata && slotdata.max_friends && slotdata.friend_count
       ? Math.min((slotdata.friend_count / slotdata.max_friends) * 100, 100)
       : 0;
 
   const isFullSlot =
-    slotdata?.max_friends && slotdata?.friend_count >= slotdata?.max_friends;
+    slotdata &&
+    slotdata.max_friends &&
+    slotdata.friend_count >= slotdata.max_friends;
 
   const handleCopyUsername = () => {
-    if (!user?.username) return;
+    if (!user || !user.username) return;
     const url = `https://locket.cam/${user.username}`;
-    navigator.clipboard.writeText(url);
+    copyText(url);
     SonnerSuccess("Đã sao chép URL profile!", ` ${url}`);
   };
 
@@ -130,7 +133,7 @@ export default function CelebrateItem({ user, slotdata, onAdd }) {
       </div>
 
       {/* Thanh tiến trình bạn bè */}
-      {slotdata?.max_friends && (
+      {slotdata && slotdata.max_friends && (
         <div className="mt-1">
           <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
