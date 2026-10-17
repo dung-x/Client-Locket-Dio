@@ -6,9 +6,14 @@ const { logGroupWrapper, logInfo } = require("./src/utils/logEventUtils");
 
 const app = express();
 
-// ✅ Cấu hình CORS nâng cao
+// ✅ Cấu hình CORS: cho phép origin cấu hình qua .env (phần riêng tư)
+// Mặc định localhost:*; thêm các origin khác qua ALLOWED_ORIGINS.
 const allowedOrigins = [
   /^http:\/\/localhost:\d+$/, // localhost:*
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((o) => new RegExp(`^${o.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`))
+    : []),
 ];
 
 app.use(
@@ -18,7 +23,8 @@ app.use(
       if (allowedOrigins.some((pattern) => pattern.test(origin))) {
         return callback(null, true);
       }
-      return callback(new Error("Not allowed by CORS"));
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      return callback(null, false); // reject theo chuẩn CORS
     },
     credentials: true, // Nếu bạn cần gửi cookie/authorization
   }),
