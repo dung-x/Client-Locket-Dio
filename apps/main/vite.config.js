@@ -51,7 +51,7 @@ const safari12Babel = {
         filename: id,
         presets: [
           [presetEnv, { targets: { safari: "12", ios: "12" }, modules: false, useBuiltIns: false }],
-          presetReact,
+          [presetReact, { runtime: "automatic", importSource: "react" }],
         ],
         babelrc: false,
         configFile: false,

@@ -82,7 +82,7 @@ const safari12Babel = {
             modules: false,
             useBuiltIns: false,
           }],
-          presetReact,
+          [presetReact, { runtime: "automatic", importSource: "react" }],
         ],
         babelrc: false,
         configFile: false,
