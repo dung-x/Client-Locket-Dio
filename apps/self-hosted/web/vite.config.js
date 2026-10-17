@@ -1,9 +1,10 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import legacy from "@vitejs/plugin-legacy";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { VitePWA } from "vite-plugin-pwa";
+import * as babel from "@babel/core";
+import presetEnv from "@babel/preset-env";
+import presetReact from "@babel/preset-react";
 
 const manifestForPlugIn = {
   // ✅ Dùng đúng chiến lược cập nhật SW
@@ -59,51 +60,60 @@ const manifestForPlugIn = {
   },
 };
 
+// Safari 12.5 single-build: one bundle (no nomodule/SystemJS split).
+// @babel/preset-env downlevels ?. / ?? / async-await / class fields etc.
+// src/polyfills.js supplies the runtime APIs Babel doesn't polyfill.
+const safari12Babel = {
+  name: "safari-12-babel",
+  enforce: "pre",
+  transform(code, id) {
+    if (!/\.[cm]?[jt]sx?$/.test(id)) return null;
+    // Deps already ship ES2017+; sw.js is hand-written ES5 and built
+    // separately by vite-plugin-pwa — leave both alone.
+    if (id.includes("node_modules") || id.includes("/sw.js")) return null;
+
+    let result;
+    try {
+      result = babel.transformSync(code, {
+        filename: id,
+        presets: [
+          [presetEnv, {
+            targets: { safari: "12", ios: "12" },
+            modules: false,
+            useBuiltIns: false,
+          }],
+          presetReact,
+        ],
+        babelrc: false,
+        configFile: false,
+        sourceMap: true,
+      });
+    } catch (err) {
+      console.warn(`[safari-12-babel] ${id}: ${err.message}`);
+      return null;
+    }
+    return { code: result.code, map: result.map };
+  },
+};
+
 const brand = process.env.VITE_BRAND;
 const publicDir = brand ? `public-${brand}` : "public";
 
 export default defineConfig({
   publicDir,
+  base: "/",
   server: {
     host: true,
   },
-  plugins: [
-    react(),
-    // Safari 12.5 legacy build: transpile ?. / ?? / modern syntax + nomodule fallback.
-    // modernTargets pinned to exclude Safari 12 so iOS 12 loads the legacy chunk.
-    legacy({
-      targets: ["safari >= 12", "ios >= 12", "chrome >= 63", "firefox >= 67"],
-      modernTargets: [
-        "safari >= 16.4",
-        "chrome >= 107",
-        "edge >= 107",
-        "firefox >= 104",
-      ],
-      polyfills: true,
-      additionalLegacyPolyfills: [
-        "regenerator-runtime/runtime",
-        "core-js/stable",
-      ],
-      renderLegacyChunks: true,
-      modernPolyfills: true,
-    }),
-    VitePWA(manifestForPlugIn),
-    visualizer(),
-  ],
+  plugins: [safari12Babel, VitePWA(manifestForPlugIn), visualizer()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"), // alias @ trỏ vào thư mục src
     },
   },
   build: {
-    // Modern bundle floor; legacy plugin downlevels to ES5/SystemJS for Safari 12.
     target: "es2017",
-    // esbuild cannot emit ES5 — terser is required for the legacy chunk.
-    minify: "terser",
-    terserOptions: {
-      ecma: 2017,
-      safari10: true,
-    },
+    minify: "esbuild",
     cssTarget: "safari12",
     rollupOptions: {
       output: {
